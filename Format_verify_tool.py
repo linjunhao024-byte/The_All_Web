@@ -342,6 +342,7 @@ class Validator:
             self._check_cover_advisor_format()
 
         self._check_cover_date()
+        self._check_h1_structure()
         self._check_h2_structure()
         self._check_literature_review_word_count()
         self._check_references()
@@ -375,18 +376,20 @@ class Validator:
         bad_snippets = []
         for i, p in enumerate(body_paras):
             spacing = self.parser.get_paragraph_line_spacing(p)
-            if spacing is not None and abs(spacing - target) > 0.05:
+            # 未设定行距（None）或显式设为非目标值，均判定为不合规
+            if spacing is None or abs(spacing - target) > 0.05:
                 non_compliant.append(i)
                 snippet = p.text[:50] + ("..." if len(p.text) > 50 else "")
                 if snippet.strip():
-                    bad_snippets.append(f"[段落{i}] {snippet}")
+                    actual = f"{spacing}" if spacing is not None else "未设定"
+                    bad_snippets.append(f"[段落{i}] {snippet} (行距: {actual})")
 
         if not non_compliant:
             self.report.add_pass("全局行距", f"正文行距统一为 {target} 倍行距")
         else:
             self.report.add_fail(
                 "全局行距",
-                f"共 {len(non_compliant)} 个段落行距不为 {target} 倍",
+                f"共 {len(non_compliant)} 个段落行距不合规（未设定或非 {target} 倍）",
                 context_text="\n".join(bad_snippets[:10]) if bad_snippets else None
             )
 
@@ -571,6 +574,50 @@ class Validator:
             self.report.add_fail(
                 "大纲结构",
                 f"缺少以下二级标题: {missing}",
+                context_text="\n".join(context_lines)
+            )
+
+    # ── 6b. 一级标题结构校验 ──
+
+    def _check_h1_structure(self):
+        """校验四个一级标题是否存在，重点验证第二节的完整长标题"""
+        # 锚点：必须包含的关键字（去空格后匹配）
+        required_h1 = {
+            "1. 文献综述": ["文献综述"],
+            "2. 研究的主要内容、需要解决的关键问题和思路、研究方法及手段": [
+                "主要内容", "关键问题", "思路", "研究方法"
+            ],
+            "3. 进度安排": ["进度", "安排"],
+            "4. 指导教师意见": ["指导教师", "意见"],
+        }
+
+        # 提取实际的一级标题
+        actual_h1 = []
+        for p in self.parser.paragraphs:
+            text = p.text.strip()
+            if self.parser.RE_H1.match(text) and not self.parser.RE_H2.match(text):
+                actual_h1.append(text)
+
+        missing = []
+        for expected, keywords in required_h1.items():
+            found = False
+            for title in actual_h1:
+                clean = title.replace(" ", "").replace("　", "")
+                if all(kw in clean for kw in keywords):
+                    found = True
+                    break
+            if not found:
+                missing.append(expected)
+
+        if not missing:
+            self.report.add_pass("一级标题结构", "全部 4 个一级标题均存在且内容完整")
+        else:
+            context_lines = ["文档中实际找到的一级标题："]
+            for t in actual_h1:
+                context_lines.append(f"  · {t}")
+            self.report.add_fail(
+                "一级标题结构",
+                f"缺少或内容不完整的标题: {missing}",
                 context_text="\n".join(context_lines)
             )
 
@@ -858,7 +905,7 @@ class Validator:
         section3_end = None
         for i, p in enumerate(self.parser.paragraphs):
             text = p.text.strip()
-            if re.match(r"^\s*3\.\s*", text) and ("进度" in text or "安排" in text or "计划" in text):
+            if re.match(r"^\s*3\.\s*", text) and ("进度" in text and "安排" in text):
                 section3_start = i
                 continue
             if section3_start is not None:
@@ -1164,9 +1211,14 @@ class Validator:
                 )
 
         # ── 11.5 参考文献标题 ──
-        ref_title_para = self.parser.find_paragraph_containing("参考文献")
+        ref_title_para = None
+        for p in self.parser.paragraphs:
+            text = p.text.strip()
+            if "参考文献" in text and not self.parser.RE_H2.match(text):
+                ref_title_para = p
+                break
         if ref_title_para is None:
-            self.report.add_error("未找到「参考文献」标题，跳过字体校验")
+            self.report.add_error("未找到独立的「参考文献」标题段落，跳过字体校验")
         else:
             font = self.parser.get_paragraph_effective_font(ref_title_para)
             size = self.parser.get_paragraph_font_size(ref_title_para)
