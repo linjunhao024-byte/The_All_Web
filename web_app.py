@@ -59,6 +59,8 @@ if uploaded_file is not None:
     }
     
     # 按钮激活
+    st.warning("⚠️ 免责声明：本工具格式校验结果仅供参考。由于文档结构可能存在原生性错乱，实际通过标准请以导师最终意见为准，建议生成报告后人工复查一遍。")
+
     if st.button("🚀 开始一键格式校验", type="primary", use_container_width=True):
         with st.spinner("正在深度解析文档并交叉校对中，请稍候..."):
             try:
