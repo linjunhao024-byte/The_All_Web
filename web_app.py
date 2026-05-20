@@ -95,8 +95,9 @@ if uploaded_file is not None:
 
 # ── 4. 专属页脚署名 ──
 st.markdown(
-    "<br><p style='text-align: center; color: #9CA3AF; font-size: 12px;'>"
-    "Developed with ❤️ by 林格 | 谨以此工具献给被格式折磨的同学们"
+    "<br><hr><p style='text-align: center; color: #9CA3AF; font-size: 14px;'>"
+    "Developed with ❤️ by 林格 | 谨以此工具献给被格式折磨的同学们<br><br>"
+    "🌟 <a href='https://github.com/linjunhao024-byte/The_All_Web' target='_blank' style='color: #4F46E5; text-decoration: none; font-weight: bold;'>本项目源代码已在 GitHub 开源，欢迎访问与交流！</a>"
     "</p>", 
     unsafe_allow_html=True
 )

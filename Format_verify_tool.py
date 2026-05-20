@@ -487,20 +487,21 @@ class Validator:
 
         after_colon = text[colon_pos + 1:].strip()
 
+        _tutor_fix_msg = (
+            "导师姓名与职称之间必须使用【全角空格】（宽度等同于一个汉字）。\n"
+            "检测到您可能使用了普通的半角空格或未加空格。\n"
+            "💡 修复建议：请在电脑中文输入法状态下，按下 `Shift + 空格键` 切换为全角模式再输入；\n"
+            "或者最简单的方法：直接复制右侧括号内的空白符号【　】去替换文档里的空格。"
+        )
+
         # 检查是否包含半角空格（不应该有）
         if " " in after_colon:
-            self.report.add_fail(
-                "导师格式",
-                f"导师姓名与职称之间不应包含半角空格，当前内容: 「{after_colon}」"
-            )
+            self.report.add_fail("导师格式", _tutor_fix_msg)
             return
 
         # 检查是否包含全角空格
         if "　" not in after_colon:
-            self.report.add_fail(
-                "导师格式",
-                f"导师姓名与职称之间缺少全角空格，当前内容: 「{after_colon}」"
-            )
+            self.report.add_fail("导师格式", _tutor_fix_msg)
             return
 
         # 检查全角空格数量是否为1
