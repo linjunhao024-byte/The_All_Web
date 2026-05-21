@@ -36,13 +36,57 @@ st.markdown("""
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
     }
+
+    /* 侧边栏全部文字强制提亮 */
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] .stMarkdown {
+        color: #F8FAFC !important;
+        text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Radio 选项：选中态高亮 */
     section[data-testid="stSidebar"] .stRadio label span {
         color: #e2e8f0 !important;
         font-size: 15px;
+        transition: all 0.2s ease-in-out;
     }
     section[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] div[role="radio"][aria-checked="true"] {
         background-color: #6366f1 !important;
         border-color: #6366f1 !important;
+    }
+
+    /* Radio 悬浮：呼吸感微微放大 */
+    [data-testid="stSidebar"] .stRadio label {
+        transition: all 0.2s ease-in-out;
+        transform-origin: left center;
+        padding: 2px 0;
+        border-radius: 6px;
+    }
+    [data-testid="stSidebar"] .stRadio label:hover {
+        transform: scale(1.03);
+    }
+    [data-testid="stSidebar"] .stRadio label:hover span {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    /* GitHub 链接：亮蓝色 + 悬浮呼吸放大 */
+    [data-testid="stSidebar"] a {
+        color: #93C5FD !important;
+        font-weight: bold !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease-in-out;
+        display: inline-block;
+    }
+    [data-testid="stSidebar"] a:hover {
+        color: #BFDBFE !important;
+        text-decoration: underline !important;
+        transform: scale(1.03);
     }
 
     /* Metric 卡片美化 */
